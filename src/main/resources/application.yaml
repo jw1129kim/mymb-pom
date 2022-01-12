@@ -1,0 +1,29 @@
+#core:
+#  connections:
+#    - name: ccpPath
+#      value: yellow
+#    - name: walletPath
+#      color: red
+#  users:
+#    - name: mint
+#      value: minter
+core:
+  config:
+    activate:
+      on-profile: test
+  connections:
+    - ccp-name: org1ccp
+      ccp-path: "<connection profile path>"
+    - ccp-name: org2ccp
+      ccp-path: "<connection profile path>"
+  users:
+    - name: minter
+      organization: org1
+      mspid: Org1MSP
+      id: minter@org1.example.com
+      role: minter
+      credential-root: "<credential root path>"
+      wallet-root: "<wallet root path>"
+  erc721:
+    channel: mychannel
+    ccn: token_erc721
