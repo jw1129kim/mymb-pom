@@ -27,3 +27,13 @@ core:
   erc721:
     channel: mychannel
     ccn: token_erc721
+
+spring:
+  data:
+    mongodb:
+      host: 192.168.56.2
+      port: 27017
+      authentication-database: admin
+      username: mymb
+      password: mymb
+      database: mymb_pom
