@@ -1,22 +1,18 @@
 package com.mymb.platform;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mymb.platform.api.model.nft.NftInfo;
-import com.mymb.platform.api.model.nft.NftInfoResult;
+import com.mymb.platform.api.model.mymb.MymbToken;
+import com.mymb.platform.api.model.mymb.MymbTokenResult;
+import com.mymb.platform.api.model.policy.MymbPolicy;
 import com.mymb.platform.api.model.project.ProjectInfo;
 import com.mymb.platform.api.model.project.ProjectInfoResult;
+import com.mymb.platform.api.model.user.UserInfo;
+import com.mymb.platform.api.repositories.PolicyRepository;
 import com.mymb.platform.api.repositories.ProjectsRepository;
-import com.mymb.platform.core.context.GlobalContext;
 import com.mymb.platform.core.context.property.MymbProperty;
-import com.mymb.platform.core.context.property.model.ERC721Property;
 import com.mymb.platform.pom.PomProcessor;
-import com.mymb.platform.pom.Processor;
 import com.mymb.platform.utils.Users;
-import org.apache.coyote.Response;
-import org.hyperledger.fabric.gateway.Contract;
 import org.hyperledger.fabric.gateway.Gateway;
-import org.hyperledger.fabric.gateway.Network;
-import org.hyperledger.fabric.gateway.Wallet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,10 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import java.util.List;
 
 @RestController
 @RequestMapping("/mymb/pom")
@@ -49,6 +42,12 @@ public class Application {
     @Autowired
     private ProjectsRepository projectsRepository;
 
+    @Autowired
+    private PolicyRepository policyRepository;
+
+    @Autowired
+    private PomProcessor pomProcessor;
+
     public static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static Gateway gateway;
     private static ObjectMapper mapper;
@@ -61,79 +60,112 @@ public class Application {
         return "Hello Store2! - " + pName;
     }
 
-    @RequestMapping(value = "/nft", method = RequestMethod.POST)
-    public ResponseEntity<?> createProduct(@RequestBody NftInfo nftInfo){
-        String resultStr = "";
-        NftInfoResult nftResult = null;
-        ERC721Property erc721Property = GlobalContext.getERC721();
+//    @RequestMapping(value = "/nft", method = RequestMethod.POST)
+//    public ResponseEntity<?> createProduct(@RequestBody NftInfo nftInfo){
+//        String resultStr = "";
+//        NftInfoResult nftResult = null;
+//        ERC721Property erc721Property = GlobalContext.getERC721();
+//
+//        try {
+//            byte[] result = getContract(erc721Property.getChannel(), erc721Property.getCcn()).submitTransaction("MintWithTokenURI", nftInfo.getId(), nftInfo.getUri());
+//            resultStr = new String(result, UTF_8);
+//            nftResult = getMapper().readValue(new String(result, UTF_8), NftInfoResult.class);
+//
+//        }catch(Exception e){
+//            e.printStackTrace();;
+//        }
+//
+//        return new ResponseEntity<>(nftResult, HttpStatus.CREATED);
+//    }
 
-        try {
-            byte[] result = getContract(erc721Property.getChannel(), erc721Property.getCcn()).submitTransaction("MintWithTokenURI", nftInfo.getId(), nftInfo.getUri());
-            resultStr = new String(result, UTF_8);
-            nftResult = getMapper().readValue(new String(result, UTF_8), NftInfoResult.class);
+    @RequestMapping(value = "/token", method = RequestMethod.POST)
+    public ResponseEntity<?> mintERC20(@RequestBody MymbToken mymbToken) throws Exception {
 
-        }catch(Exception e){
-            e.printStackTrace();;
-        }
+        MymbTokenResult result = null;
 
-        return new ResponseEntity<>(nftResult, HttpStatus.CREATED);
+        result = pomProcessor.mintErc20Token(mymbToken.getAmountOfToken());
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+
+    }
+
+    @RequestMapping(value = "/token/all", method = RequestMethod.GET)
+    public ResponseEntity<?> getTotalSupplyERC20() throws Exception {
+
+        int result = 0;
+
+        result = pomProcessor.totalSupplyOfErc20();
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+
     }
 
     @RequestMapping(value = "/project", method = RequestMethod.POST)
-    public ResponseEntity<?> addProject(@RequestBody ProjectInfo projectInfo) {
+    public ResponseEntity<?> addProject(@RequestBody ProjectInfo projectInfo) throws Exception {
         String resultStr = "";
         ProjectInfoResult result = null;
 
-        projectsRepository.insert(projectInfo);
-
-//        PomProcessor.getInstance()
+        pomProcessor.addProject(projectInfo);
 
         return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
-    private Contract getContract(String channelId, String chaincodeId) throws Exception {
+    @RequestMapping(value = "/projects", method = RequestMethod.GET)
+    public ResponseEntity<?> getProjects() {
+        String resultStr = "";
+        List projectList = null;
 
-        getGateway();
-        Network network = gateway.getNetwork(channelId);
-        Contract contract = network.getContract(chaincodeId);
+        projectList = pomProcessor.getProjects();
 
-        return contract;
+        return new ResponseEntity<>(projectList, HttpStatus.OK);
     }
 
-    private Gateway getGateway() throws Exception {
-        if(gateway != null){
-            return gateway;
-        }
+    @RequestMapping(value = "/projects/amount", method = RequestMethod.GET)
+    public ResponseEntity<?> getTotalAmountOfProjecs(){
 
-        return connectToBlockchain();
+        Long amount = pomProcessor.totalAmountOfProjects();
+
+        return new ResponseEntity<>(amount, HttpStatus.OK);
+
     }
 
-    private ObjectMapper getMapper(){
+    @RequestMapping(value = "/policy", method = RequestMethod.POST)
+    public ResponseEntity<?> createMymbPomPolicy(@RequestBody MymbPolicy mymbPolicy){
 
-        if(mapper == null){
-            mapper = new ObjectMapper();
-        }
+//        MymbPolicy policy = null;
+//        MymbPomPolicy pomPolicy = null;
+//        ObjectMapper mapper = new ObjectMapper();
+//
+//        policy = MymbPolicy.builder().build();
+//        policy.setName("projectPolicy");
+//        pomPolicy = MymbPomPolicy.builder().build();
+//
+//        pomPolicy.setName("projectPolicy");
+//        pomPolicy.setIssueConditionByProjects(100000000);
+//        pomPolicy.setNumOfTokenByProjects(10000);
+//        pomPolicy.setIssueConditionByUsers(10000);
+//        pomPolicy.setNumOfTokenByUsers(1000);
+//        try {
+//            policy.setContent(mapper.writeValueAsString(pomPolicy));
+//        } catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
 
-        return mapper;
+//        policyRepository.save(policy);
+
+//        return new ResponseEntity<>(policy, HttpStatus.OK);
+
+        policyRepository.save(mymbPolicy);
+
+        return new ResponseEntity<>(mymbPolicy, HttpStatus.OK);
     }
 
-    public Gateway connectToBlockchain() throws Exception {
+    @RequestMapping(value = "/user", method = RequestMethod.POST)
+    public ResponseEntity<?> addUser(@RequestBody UserInfo userInfo) throws Exception {
 
-        String userName = "minter";
+        pomProcessor.addUser(userInfo);
 
-        logger.info("Start to connect Gateway");
-        Path ccpPath = Paths.get(GlobalContext.getConnections("org1ccp").getCcpPath());
-
-        Wallet wallet = Users.getWalletByUser(userName);
-        logger.info("Config Path : " + ccpPath.toString());
-
-        Gateway.Builder builder = Gateway.createBuilder();
-        builder.identity(wallet, GlobalContext.getUser(userName).getId()).networkConfig(ccpPath).discovery(true);
-
-        logger.info("builder connect");
-        gateway = builder.connect();
-
-        return gateway;
+        return new ResponseEntity<>(userInfo, HttpStatus.OK);
     }
 
     public static void main(String... args) {

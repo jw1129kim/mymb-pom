@@ -21,6 +21,7 @@ configurations {
 compileJava.dependsOn(processResources)
 
 dependencies {
+    implementation 'org.jetbrains:annotations:20.1.0'
     customProvidedRuntime 'org.springframework.boot:spring-boot-starter-tomcat:2.6.2'
     implementation 'org.springframework.boot:spring-boot-starter:2.6.2'
 

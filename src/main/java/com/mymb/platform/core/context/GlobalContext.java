@@ -2,6 +2,7 @@ package com.mymb.platform.core.context;
 
 import com.mymb.platform.core.context.property.MymbProperty;
 import com.mymb.platform.core.context.property.model.ConnectionProperty;
+import com.mymb.platform.core.context.property.model.ERC20Property;
 import com.mymb.platform.core.context.property.model.ERC721Property;
 import com.mymb.platform.core.context.property.model.UsersProperty;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,5 +73,9 @@ public class GlobalContext {
     public static ERC721Property getERC721() {
 
         return mymbProperty.getErc721();
+    }
+
+    public static ERC20Property getERC20() {
+        return mymbProperty.getErc20();
     }
 }

@@ -1,6 +1,7 @@
 package com.mymb.platform.core.context.property;
 
 import com.mymb.platform.core.context.property.model.ConnectionProperty;
+import com.mymb.platform.core.context.property.model.ERC20Property;
 import com.mymb.platform.core.context.property.model.ERC721Property;
 import com.mymb.platform.core.context.property.model.UsersProperty;
 import lombok.Data;
@@ -24,4 +25,5 @@ public class MymbProperty {
     private List<ConnectionProperty> connections = new ArrayList<>();
     private List<UsersProperty> users = new ArrayList<>();
     private ERC721Property erc721;
+    private ERC20Property erc20;
 }
