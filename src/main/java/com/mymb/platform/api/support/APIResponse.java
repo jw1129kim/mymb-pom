@@ -1,13 +1,19 @@
 package com.mymb.platform.api.support;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
-public class APIResponse {
-    private String data;
-//    private List<String> errors;
+@RequiredArgsConstructor
+public abstract class APIResponse<T> {
+
+    @NotNull
+    private T data;
+
+    private List<String> errors;
 }

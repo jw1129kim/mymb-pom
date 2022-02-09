@@ -64,7 +64,8 @@ public class Users {
             Identity existingUser = wallet.get(user.getId());
 
             if(existingUser == null){
-                throw new Exception("There is no user : " + name);
+                addUser(name);
+//                throw new Exception("There is no user : " + name);
             }
         } catch (Exception e) {
             System.err.println("Error get wallet");
