@@ -3,13 +3,17 @@ package com.mymb.platform;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mymb.platform.api.model.mymb.MymbToken;
 import com.mymb.platform.api.model.mymb.MymbTokenResult;
+import com.mymb.platform.api.model.nft.NftInfo;
+import com.mymb.platform.api.model.nft.NftInfoResult;
 import com.mymb.platform.api.model.policy.MymbPolicy;
 import com.mymb.platform.api.model.project.ProjectInfo;
 import com.mymb.platform.api.model.project.ProjectInfoResult;
 import com.mymb.platform.api.model.user.UserInfo;
 import com.mymb.platform.api.repositories.PolicyRepository;
 import com.mymb.platform.api.repositories.ProjectsRepository;
+import com.mymb.platform.core.context.GlobalContext;
 import com.mymb.platform.core.context.property.MymbProperty;
+import com.mymb.platform.core.context.property.model.ERC721Property;
 import com.mymb.platform.pom.PomProcessor;
 import com.mymb.platform.utils.Users;
 import org.hyperledger.fabric.gateway.Gateway;
@@ -26,6 +30,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @RestController
 @RequestMapping("/mymb/pom")
@@ -60,23 +66,18 @@ public class Application {
         return "Hello Store2! - " + pName;
     }
 
-//    @RequestMapping(value = "/nft", method = RequestMethod.POST)
-//    public ResponseEntity<?> createProduct(@RequestBody NftInfo nftInfo){
-//        String resultStr = "";
-//        NftInfoResult nftResult = null;
-//        ERC721Property erc721Property = GlobalContext.getERC721();
-//
-//        try {
-//            byte[] result = getContract(erc721Property.getChannel(), erc721Property.getCcn()).submitTransaction("MintWithTokenURI", nftInfo.getId(), nftInfo.getUri());
-//            resultStr = new String(result, UTF_8);
-//            nftResult = getMapper().readValue(new String(result, UTF_8), NftInfoResult.class);
-//
-//        }catch(Exception e){
-//            e.printStackTrace();;
-//        }
-//
-//        return new ResponseEntity<>(nftResult, HttpStatus.CREATED);
-//    }
+    @RequestMapping(value = "/nft", method = RequestMethod.POST)
+    public ResponseEntity<?> createProduct(@RequestBody NftInfo nftInfo){
+
+        NftInfoResult nftResult = null;
+        try {
+            nftResult = pomProcessor.mintErc721Token(nftInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new ResponseEntity<>(nftResult, HttpStatus.CREATED);
+    }
 
     @RequestMapping(value = "/token", method = RequestMethod.POST)
     public ResponseEntity<?> mintERC20(@RequestBody MymbToken mymbToken) throws Exception {
@@ -155,7 +156,10 @@ public class Application {
 
 //        return new ResponseEntity<>(policy, HttpStatus.OK);
 
-        policyRepository.save(mymbPolicy);
+        MymbPolicy policy = policyRepository.findByName("projectPolicy");
+        policy.setContent(mymbPolicy.getContent());
+
+        policyRepository.save(policy);
 
         return new ResponseEntity<>(mymbPolicy, HttpStatus.OK);
     }

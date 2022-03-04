@@ -2,6 +2,8 @@ package com.mymb.platform.pom;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mymb.platform.api.model.mymb.MymbTokenResult;
+import com.mymb.platform.api.model.nft.NftInfo;
+import com.mymb.platform.api.model.nft.NftInfoResult;
 import com.mymb.platform.api.model.policy.MymbPolicy;
 import com.mymb.platform.api.model.project.ProjectInfo;
 import com.mymb.platform.api.model.project.ProjectStatus;
@@ -50,6 +52,9 @@ public class PomProcessor implements Processor{
     @Autowired
     private UserStatusRepository userStatusRepository;
 
+    @Autowired
+    private NftRepository nftRepository;
+
     public static final Logger logger = LoggerFactory.getLogger(PomProcessor.class);
 
     public synchronized static Processor getInstance() {
@@ -67,6 +72,17 @@ public class PomProcessor implements Processor{
         logger.info(new String(result));
 
         return tokenResult;
+    }
+
+    @Override
+    public NftInfoResult mintErc721Token(NftInfo nftInfo) throws Exception {
+        String resultStr = "";
+        NftInfoResult nftResult = null;
+        byte[] result = getContract(GlobalContext.getERC721().getChannel(), GlobalContext.getERC721().getCcn()).submitTransaction("MintWithTokenURI", nftInfo.getId(), nftInfo.getUri());
+        resultStr = new String(result, UTF_8);
+        nftResult = getMapper().readValue(new String(result, UTF_8), NftInfoResult.class);
+
+        return nftResult;
     }
 
     @Override
@@ -111,10 +127,16 @@ public class PomProcessor implements Processor{
     }
 
     @Override
+    public long calcNFTIssuance(ProjectInfo project) throws Exception {
+        return 0;
+    }
+
+    @Override
     public void addProject(ProjectInfo project) throws Exception {
 
         int numOfToken = 0;
         ProjectStatus prjStatus = null;
+        NftInfoResult nftResult = null;
 
         projectsRepository.insert(project);
         prjStatus = projectStatusRepository.findByName("projectAmountStatus");
@@ -133,6 +155,12 @@ public class PomProcessor implements Processor{
         numOfToken = calculateTokenAmountToBeGenerated(prjStatus);
         if(numOfToken > 0)
             mintErc20Token(numOfToken);
+
+        NftInfo nft = NftInfo.builder().build();
+        nft.setId(project.get_id() + "_" + project.getName());
+        nft.setUri("");
+        nftResult = mintErc721Token(nft);
+        nftRepository.insert(nftResult);
     }
 
     @Override

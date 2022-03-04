@@ -13,17 +13,17 @@ core:
       on-profile: test
   connections:
     - ccp-name: org1ccp
-      ccp-path: "<connection profile path>"
+      ccp-path: "/Users/mjkong/mym-crypto/organizations/peerOrganizations/org1.example.com/connection-org1.json"
     - ccp-name: org2ccp
-      ccp-path: "<connection profile path>"
+      ccp-path: "/Users/mjkong/mym-crypto/organizations/peerOrganizations/org2.example.com/connection-org2.json"
   users:
     - name: minter
       organization: org1
       mspid: Org1MSP
       id: minter@org1.example.com
       role: minter
-      credential-root: "<credential root path>"
-      wallet-root: "<wallet path>"
+      credential-root: "/Users/mjkong/mym-crypto/organizations/peerOrganizations/org1.example.com/users"
+      wallet-root: "/Users/mjkong/mym-crypto/wallet"
   erc721:
     channel: mychannel
     ccn: token_erc721
@@ -34,9 +34,9 @@ core:
 spring:
   data:
     mongodb:
-      host:
+      host: 192.168.56.2
       port: 27017
-      authentication-database:
-      username:
-      password:
-      database:
+      authentication-database: admin
+      username: mymb
+      password: mymb
+      database: mymb_pom

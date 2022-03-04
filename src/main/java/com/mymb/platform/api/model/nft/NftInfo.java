@@ -19,6 +19,9 @@ public class NftInfo {
     @JsonProperty
     private String uri;
 
+    @JsonProperty
+    private long amount;
+
     @JsonPOJOBuilder(withPrefix = "")
     public static class NftInfoBuilder {}
 }
